@@ -1,6 +1,4 @@
 use std::{env, fs, io};
-use std::collections::HashMap;
-
 pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
     if let Some(home_path) = dirs::home_dir() {
         let rsh_path = home_path.join(".rsh");
@@ -20,33 +18,14 @@ pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
 }
 
 pub(crate) fn replace_placeholders(prompt: &str) -> String  {
-    let mut result = String::with_capacity(prompt.len());
-    let mut chars = prompt.chars().peekable();
+    let username = whoami::username();
+    let hostname = whoami::hostname();
+    let current_directory = env::current_dir().unwrap().display().to_string();
 
-    //Hardcoded Replacements
-    let mut replacements = HashMap::new();
-    replacements.insert("$user", whoami::username());
-    replacements.insert("$home", dirs::home_dir().map_or_else(|| "/".to_string(), |p| p.to_string_lossy().into_owned()));
-    replacements.insert("$directory", env::current_dir().unwrap().display().to_string());
-    replacements.insert("$hostname", whoami::hostname());
+    let replaced_prompt = prompt
+        .replace("$user", &username)
+        .replace("$hostname", &hostname)
+        .replace("$directory", &current_directory);
 
-    while let Some(ch) = chars.next() {
-        if ch == '$' {
-            if let Some(&next_char) = chars.peek() {
-                if next_char.is_alphanumeric() || next_char == '_' {
-                    let placeholder: String = std::iter::once(ch)
-                        .chain(chars.by_ref().take_while(|&c| c.is_alphanumeric() || c == '_'))
-                        .collect();
-                    result.push_str(replacements.get(placeholder.as_str()).unwrap_or(&&placeholder));
-                } else {
-                    result.push(ch);
-                }
-            } else {
-                result.push(ch);
-            }
-        } else {
-            result.push(ch);
-        }
-    }
-    result
+    return replaced_prompt;
 }
