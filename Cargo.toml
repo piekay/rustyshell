@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 dirs = "5.0.1"
 whoami = "1.4.1"
+rustyline = { version = "13.0.0", features = ["with-file-history"] }
 
