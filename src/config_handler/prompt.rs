@@ -7,13 +7,13 @@ pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
                 let prompt_statement = content.lines()
                     .find(|line| line.trim().starts_with("prompt=\"") && line.trim().ends_with("\""))
                     .map(|line| line.trim_matches('"').trim_start_matches("prompt=\"").to_string())
-                    .unwrap_or_else(|| "> ".to_string()); // Default to "> " if not found
+                    .unwrap_or_else(|| "> ".to_string());
                 Ok(prompt_statement)
             }
-            Err(_) => Ok("> ".to_string()), // Return "> " on file read error
+            Err(_) => Ok("> ".to_string()),
         }
     } else {
-        Ok("> ".to_string()) // Return "> " if home directory is not available
+        Ok("> ".to_string())
     }
 }
 
@@ -26,6 +26,5 @@ pub(crate) fn replace_placeholders(prompt: &str) -> String  {
         .replace("$user", &username)
         .replace("$hostname", &hostname)
         .replace("$directory", &current_directory);
-
     return replaced_prompt;
 }

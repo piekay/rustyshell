@@ -14,6 +14,7 @@ fn main() -> Result<(), Error> {
     if rl.load_history(&home_dir().unwrap().join(".rsh_history")).is_err() {
         println!("No history file found, will create one on exit")
     }
+
     loop {
         if let Ok(print_statement) = read_prompt_statement_from_rsh() {
             let readline = rl.readline(&*replace_placeholders(print_statement.as_str()));
@@ -23,7 +24,7 @@ fn main() -> Result<(), Error> {
                         break;
                     }
                     let tilde_handler = line.replace("~", &*home_dir().unwrap().to_string_lossy());
-                    rl.add_history_entry(line.as_str()).expect("TODO: Couldn't add to history");
+                    rl.add_history_entry(line.as_str()).expect("Error: Couldn't add to history");
                     command_handler(tilde_handler);
                 },
                 Err(ReadlineError::Interrupted) => {
@@ -41,6 +42,7 @@ fn main() -> Result<(), Error> {
             }
         }
     }
+
     rl.save_history(&home_dir().unwrap().join(".rsh_history")).expect("Couldn't write to history file");
     Ok(())
 }

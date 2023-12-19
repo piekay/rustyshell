@@ -2,16 +2,13 @@ use std::process::{Child, Command, Stdio};
 use crate::built_ins::cd::execute_cd;
 
 pub(crate) fn command_handler(input:String) {
-    // must be peekable so we know when we are on the last command
     let mut commands = input.trim().split(" | ").peekable();
     let mut previous_command = None;
 
     while let Some(command) = commands.next()  {
-
         let mut parts = command.trim().split_whitespace();
 
-        let part = parts.clone();
-        if part.peekable().peek().is_none() {
+        if parts.clone().peekable().peek().is_none() {
             return;
         }
 
@@ -55,7 +52,6 @@ pub(crate) fn command_handler(input:String) {
     }
 
     if let Some(mut final_command) = previous_command {
-        // block until the final command has finished
         final_command.wait().expect("Fatal Error. Couldn't wait for command execution");
     }
 }
