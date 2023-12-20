@@ -1,4 +1,6 @@
 use std::{env, fs, io};
+use dirs::home_dir;
+
 pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
     if let Some(home_path) = dirs::home_dir() {
         let rsh_path = home_path.join(".rsh");
@@ -25,6 +27,6 @@ pub(crate) fn replace_placeholders(prompt: &str) -> String  {
     let replaced_prompt = prompt
         .replace("$user", &username)
         .replace("$hostname", &hostname)
-        .replace("$directory", &current_directory);
+        .replace("$directory", &*current_directory.replace(&*home_dir().unwrap().to_string_lossy(), "~"));
     return replaced_prompt;
 }
