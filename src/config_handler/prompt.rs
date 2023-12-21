@@ -2,7 +2,7 @@ use std::{env, fs, io};
 use dirs::home_dir;
 
 pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
-    if let Some(home_path) = dirs::home_dir() {
+    if let Some(home_path) = home_dir() {
         let rsh_path = home_path.join(".rsh");
         match fs::read_to_string(rsh_path) {
             Ok(content) => {
