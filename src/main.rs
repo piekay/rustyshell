@@ -1,21 +1,24 @@
+use rustyline::completion::{Completer};
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
 use std::fmt::Error;
 use dirs::home_dir;
 use rustyline::{Cmd, CompletionType, Config, EditMode, Editor, KeyEvent};
-use rustyline::{Completer, Helper, Hinter, Validator};
+use rustyline::{Helper, Hinter, Validator};
 use rustyline::completion::FilenameCompleter;
 use rustyline::error::ReadlineError;
 use rustyline::highlight::{Highlighter, MatchingBracketHighlighter};
 use rustyline::hint::HistoryHinter;
 use rustyline::validate::MatchingBracketValidator;
+use crate::autocomplete::{autocomplete_apps, autocomplete_files};
 use crate::command_handler::command_handler;
 use crate::config_handler::prompt::{read_prompt_statement_from_rsh, replace_placeholders};
 mod built_ins;
 mod config_handler;
 mod command_handler;
+mod autocomplete;
 
-#[derive(Helper, Completer, Hinter, Validator)]
+#[derive(Helper, Hinter, Validator)]
 struct MyHelper {
     #[rustyline(Completer)]
     completer: FilenameCompleter,
@@ -25,6 +28,32 @@ struct MyHelper {
     #[rustyline(Hinter)]
     hinter: HistoryHinter,
     colored_prompt: String,
+}
+
+
+impl Completer for MyHelper {
+    type Candidate = String;
+
+    fn complete(&self, line: &str, pos: usize, _ctx: &rustyline::Context<'_>) -> Result<(usize, Vec<String>), ReadlineError> {
+        let prefix = &line[..pos];
+        let mut app_completions = autocomplete_apps(prefix);
+        let file_completions = autocomplete_files(prefix);
+
+        let command_argument = line.chars().last().map_or(false, |c| c.is_whitespace());
+
+        if command_argument {
+            app_completions.clear();
+        }
+        if !command_argument {
+            for s in &mut app_completions {
+                *s = s.chars().skip(prefix.len()).collect();
+            }
+
+        }
+        let mut completions = app_completions;
+        completions.extend(file_completions);
+        Ok((pos, completions))
+    }
 }
 
 impl Highlighter for MyHelper {
@@ -56,7 +85,7 @@ impl Highlighter for MyHelper {
 fn main() -> Result<(), Error> {
     let config = Config::builder()
         .history_ignore_space(true)
-        .completion_type(CompletionType::Circular)
+        .completion_type(CompletionType::List)
         .edit_mode(EditMode::Emacs)
         .build();
 
