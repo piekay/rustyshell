@@ -85,7 +85,7 @@ impl Highlighter for MyHelper {
 fn main() -> Result<(), Error> {
     let config = Config::builder()
         .history_ignore_space(true)
-        .completion_type(CompletionType::Circular)
+        .completion_type(CompletionType::List)
         .edit_mode(EditMode::Emacs)
         .build();
 

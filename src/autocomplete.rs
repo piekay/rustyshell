@@ -46,6 +46,7 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
                                             if let Some(suffix) = file_name.strip_prefix(&last_arg[index + 1..]) {
                                                 let slash = suffix.to_owned() + "/";
                                                 suggestions.push(slash.to_string());
+                                                return suggestions
                                             }
                                         }
                                     }
@@ -58,16 +59,14 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
         }
         let path: PathBuf = last_arg.into();
         if let Ok(path) = fs::read_dir(path) {
-            if !last_arg.ends_with("/"){
-                suggestions.push("/".to_string());
-                return suggestions;
-            }
             for entries in path {
                 if let Ok(entries) = entries {
                     if let Ok(file_type) = entries.file_type() {
                         if file_type.is_dir() || file_type.is_file() {
                             if let Some(file_name) = entries.file_name().to_str() {
-                                    suggestions.push(file_name.to_string());
+                                let slash = file_name.to_owned() + "/";
+                                suggestions.push(slash.to_string());
+                                return suggestions
                             }
                         }
                     }
@@ -81,8 +80,9 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
             if let Ok(entry) = entry {
                 if let Some(file_name) = entry.file_name().to_str() {
                     if input.ends_with(" "){
-                        suggestions.push(file_name.to_string())
-                    }
+                        let slash = file_name.to_owned() + "/";
+                        suggestions.push(slash.to_string());
+                        return suggestions                    }
                 }
             }
         }
