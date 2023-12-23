@@ -2,6 +2,8 @@ use rustyline::completion::{Completer};
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
 use std::fmt::Error;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use dirs::home_dir;
 use rustyline::{Cmd, CompletionType, Config, EditMode, Editor, KeyEvent};
 use rustyline::{Helper, Hinter, Validator};
@@ -21,6 +23,7 @@ mod autocomplete;
 #[derive(Helper, Hinter, Validator)]
 struct MyHelper {
     #[rustyline(Completer)]
+    #[allow(dead_code)]
     completer: FilenameCompleter,
     highlighter: MatchingBracketHighlighter,
     #[rustyline(Validator)]
@@ -83,6 +86,14 @@ impl Highlighter for MyHelper {
 }
 
 fn main() -> Result<(), Error> {
+    let running = Arc::new(AtomicBool::new(true));
+
+    let running_clone = Arc::clone(&running);
+
+    ctrlc::set_handler(move || {
+        running_clone.store(false, Ordering::SeqCst);
+    }).expect("Error setting Ctrl+C handler");
+
     let config = Config::builder()
         .history_ignore_space(true)
         .completion_type(CompletionType::List)
@@ -116,14 +127,13 @@ fn main() -> Result<(), Error> {
                     if line.trim() == "exit" {
                         break;
                     }
-                    let tilde_handler = line.replace("~", &*home_dir().unwrap().to_string_lossy());
                     rl.add_history_entry(line.as_str()).expect("Error: Couldn't add to history");
-                    command_handler(tilde_handler);
+                    while running.load(Ordering::SeqCst) {
+                        command_handler(line.replace("~", &*home_dir().unwrap().to_string_lossy()));
+                        break;
+                    }
                 },
-                Err(ReadlineError::Interrupted) => {
-                    println!("CTRL-C");
-                    break
-                },
+                Err(ReadlineError::Interrupted) => {},
                 Err(ReadlineError::Eof) => {
                     println!("CTRL-D");
                     break
@@ -134,6 +144,7 @@ fn main() -> Result<(), Error> {
                 }
             }
         }
+        Arc::clone(&running).store(true, Ordering::SeqCst);
     }
 
     rl.save_history(&home_dir().unwrap().join(".rsh_history")).expect("Couldn't write to history file");
