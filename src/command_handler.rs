@@ -5,7 +5,7 @@ pub(crate) fn command_handler(input:String) {
     let mut commands = input.trim().split(" | ").peekable();
     let mut previous_command = None;
 
-    while let Some(command) = commands.next()  {
+    while let Some(command) = commands.next() {
         let mut parts = command.trim().split_whitespace();
 
         if parts.clone().peekable().peek().is_none() {
