@@ -6,7 +6,22 @@ on:
   pull_request:
     branches: [ "master" ]
 
-  release:  
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3      
+    - name: Build
+      run: cargo build --verbose
+    - name: Run Tests
+      run: cargo test --verbose
+
+      
+  release:    
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: manoadamro/rust-release@v1
@@ -14,11 +29,3 @@ on:
           owner: ${{ github.repository_owner }}
           repo: ${{ github.repository }}
           token: ${{ secrets.TOKEN }}
-
-env:
-  CARGO_TERM_COLOR: always
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
