@@ -2,7 +2,7 @@ use rustyline::completion::{Completer};
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
 use std::fmt::Error;
-use std::sync::Arc;
+use std::sync::{Arc};
 use std::sync::atomic::{AtomicBool, Ordering};
 use dirs::home_dir;
 use rustyline::{Cmd, CompletionType, Config, EditMode, Editor, KeyEvent};
@@ -33,7 +33,6 @@ struct MyHelper {
     colored_prompt: String,
 }
 
-
 impl Completer for MyHelper {
     type Candidate = String;
 
@@ -42,20 +41,18 @@ impl Completer for MyHelper {
         let mut app_completions = autocomplete_apps(prefix);
         let file_completions = autocomplete_files(prefix);
 
-        let command_argument = line.chars().last().map_or(false, |c| c.is_whitespace());
+        let command_argument = prefix.chars().last().map_or(false, |c| c.is_whitespace());
 
         if command_argument {
             app_completions.clear();
         }
-        if !command_argument {
-            for s in &mut app_completions {
-                *s = s.chars().skip(prefix.len()).collect();
-            }
 
-        }
         let mut completions = app_completions;
         completions.extend(file_completions);
-        Ok((pos, completions))
+        if prefix.split(" ").last().unwrap().starts_with("/") {
+            return Ok((pos, completions))
+        }
+        Ok((pos - prefix.split(" ").last().unwrap().len(), completions))
     }
 }
 
@@ -122,6 +119,7 @@ fn main() -> Result<(), Error> {
             let p = format!("{}", replace_placeholders(print_statement.as_str()));
             rl.helper_mut().expect("No helper").colored_prompt = format!("\x1b[1;32m{p}\x1b[0m");
             let readline = rl.readline(&p);
+
             match readline {
                 Ok(line) => {
                     if line.trim() == "exit" {
@@ -135,7 +133,6 @@ fn main() -> Result<(), Error> {
                 },
                 Err(ReadlineError::Interrupted) => {},
                 Err(ReadlineError::Eof) => {
-                    println!("CTRL-D");
                     break
                 },
                 Err(err) => {
