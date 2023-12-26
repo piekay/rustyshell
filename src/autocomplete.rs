@@ -65,8 +65,10 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
                             if file_type.is_dir() || file_type.is_file() {
                                 if let Some(file_name) = entries.file_name().to_str() {
                                     if file_name.starts_with(last_arg) {
-                                        let slash = file_name.to_owned() + "/";
-                                        suggestions.push(slash.to_string());
+                                        if !file_name.starts_with(".") {
+                                            let slash = file_name.to_owned() + "/";
+                                            suggestions.push(slash.to_string());
+                                        }
                                     }
                                 }
                             }
@@ -82,8 +84,10 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
                         if let Ok(file_type) = entries.file_type() {
                             if file_type.is_dir() || file_type.is_file() {
                                 if let Some(file_name) = entries.file_name().to_str() {
-                                    let slash = file_name.to_owned() + "/";
-                                    suggestions.push(slash.to_string());
+                                    if !file_name.starts_with(".") {
+                                        let slash = file_name.to_owned() + "/";
+                                        suggestions.push(slash.to_string());
+                                    }
                                 }
                             }
                         }
@@ -97,8 +101,10 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
             for entry in entries {
                 if let Ok(entry) = entry {
                     if let Some(file_name) = entry.file_name().to_str() {
-                        let slash = file_name.to_owned() + "/";
-                        suggestions.push(slash.to_string());
+                        if !file_name.starts_with(".") {
+                            let slash = file_name.to_owned() + "/";
+                            suggestions.push(slash.to_string());
+                        }
                     }
                 }
             }
