@@ -12,13 +12,13 @@ use rustyline::error::ReadlineError;
 use rustyline::highlight::{Highlighter, MatchingBracketHighlighter};
 use rustyline::hint::HistoryHinter;
 use rustyline::validate::MatchingBracketValidator;
-use crate::autocomplete::{autocomplete_apps, autocomplete_files};
-use crate::command_handler::command_handler;
+use crate::built_ins::autocomplete::{autocomplete_apps, autocomplete_files};
+use crate::built_ins::command_handler::command_handler;
 use crate::config_handler::prompt::{read_prompt_statement_from_rsh, replace_placeholders};
+use crate::built_ins::variable_handler::{get_vars};
+
 mod built_ins;
 mod config_handler;
-mod command_handler;
-mod autocomplete;
 
 #[derive(Helper, Hinter, Validator)]
 struct MyHelper {
@@ -87,6 +87,8 @@ fn main() -> Result<(), Error> {
 
     let running_clone = Arc::clone(&running);
 
+    let mut env_vars = get_vars().clone();
+
     ctrlc::set_handler(move || {
         running_clone.store(false, Ordering::SeqCst);
     }).expect("Error setting Ctrl+C handler");
@@ -109,7 +111,6 @@ fn main() -> Result<(), Error> {
     rl.set_helper(Some(h));
     rl.bind_sequence(KeyEvent::alt('n'), Cmd::HistorySearchForward);
     rl.bind_sequence(KeyEvent::alt('p'), Cmd::HistorySearchBackward);
-    
     if rl.load_history(&home_dir().unwrap().join(".rsh_history")).is_err() {
         println!("No history file found, will create one on exit")
     }
@@ -127,11 +128,12 @@ fn main() -> Result<(), Error> {
                     }
                     rl.add_history_entry(line.as_str()).expect("Error: Couldn't add to history");
                     while running.load(Ordering::SeqCst) {
-                        command_handler(line.replace("~", &*home_dir().unwrap().to_string_lossy()));
+                        env_vars = command_handler(line.replace("~", &*home_dir().unwrap().to_string_lossy()), env_vars);
                         break;
                     }
                 },
-                Err(ReadlineError::Interrupted) => {},
+                Err(ReadlineError::Interrupted) => {
+                },
                 Err(ReadlineError::Eof) => {
                     break
                 },

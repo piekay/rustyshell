@@ -1,10 +1,10 @@
 use std::env;
 use std::iter::Peekable;
 use std::path::{Path};
-use std::str::SplitWhitespace;
+use std::slice::Iter;
 use dirs::home_dir;
 
-pub fn execute_cd(mut args: Peekable<SplitWhitespace>) {
+pub fn execute_cd(mut args: Peekable<Iter<&str>>) {
     let homedir = home_dir().unwrap();
     let homedirtostring = homedir.to_string_lossy();
     let new_dir = args.peek().map_or(&*homedirtostring, |x| *x);
