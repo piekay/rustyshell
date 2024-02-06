@@ -1,6 +1,7 @@
 use rustyline::completion::{Completer};
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
+use std::env::current_exe;
 use std::fmt::Error;
 use std::sync::{Arc};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -14,8 +15,9 @@ use rustyline::hint::HistoryHinter;
 use rustyline::validate::MatchingBracketValidator;
 use crate::built_ins::autocomplete::{autocomplete_apps, autocomplete_files};
 use crate::built_ins::command_handler::command_handler;
-use crate::config_handler::prompt::{read_prompt_statement_from_rsh, replace_placeholders};
-use crate::built_ins::variable_handler::{get_vars};
+use crate::built_ins::filename_expansion::expand;
+use crate::config_handler::prompt::{read_prompt_statement_from_rsh};
+use crate::built_ins::variable_handler::{get_vars, set_vars};
 
 mod built_ins;
 mod config_handler;
@@ -87,7 +89,7 @@ fn main() -> Result<(), Error> {
 
     let running_clone = Arc::clone(&running);
 
-    let mut env_vars = get_vars().clone();
+    let mut env_vars = set_vars("Shell".parse().unwrap(), current_exe().unwrap().to_string_lossy().parse().unwrap(), get_vars().clone());
 
     ctrlc::set_handler(move || {
         running_clone.store(false, Ordering::SeqCst);
@@ -117,7 +119,7 @@ fn main() -> Result<(), Error> {
 
     loop {
         if let Ok(print_statement) = read_prompt_statement_from_rsh() {
-            let p = format!("{}", replace_placeholders(print_statement.as_str()));
+            let p = format!("{}", print_statement.as_str());
             rl.helper_mut().expect("No helper").colored_prompt = format!("\x1b[1;32m{p}\x1b[0m");
             let readline = rl.readline(&p);
 
@@ -128,7 +130,7 @@ fn main() -> Result<(), Error> {
                     }
                     rl.add_history_entry(line.as_str()).expect("Error: Couldn't add to history");
                     while running.load(Ordering::SeqCst) {
-                        env_vars = command_handler(line.replace("~", &*home_dir().unwrap().to_string_lossy()), env_vars);
+                        env_vars = command_handler(expand(line), env_vars);
                         break;
                     }
                 },

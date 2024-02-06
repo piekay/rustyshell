@@ -10,7 +10,7 @@ pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
                     .find(|line| line.trim().starts_with("prompt=\"") && line.trim().ends_with("\""))
                     .map(|line| line.trim_matches('"').trim_start_matches("prompt=\"").to_string())
                     .unwrap_or_else(|| "> ".to_string());
-                Ok(prompt_statement)
+                Ok(replace_placeholders(prompt_statement))
             }
             Err(_) => Ok("> ".to_string()),
         }
@@ -18,8 +18,7 @@ pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
         Ok("> ".to_string())
     }
 }
-
-pub(crate) fn replace_placeholders(prompt: &str) -> String  {
+fn replace_placeholders(prompt: String) -> String  {
     let username = whoami::username();
     let hostname = whoami::hostname();
     let current_directory = env::current_dir().unwrap().display().to_string();
