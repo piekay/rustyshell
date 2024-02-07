@@ -1,7 +1,6 @@
 use rustyline::completion::{Completer};
 use std::borrow::Cow;
 use std::borrow::Cow::{Borrowed, Owned};
-use std::env::current_exe;
 use std::fmt::Error;
 use std::sync::{Arc};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -17,7 +16,7 @@ use crate::built_ins::autocomplete::{autocomplete_apps, autocomplete_files};
 use crate::built_ins::command_handler::command_handler;
 use crate::built_ins::filename_expansion::expand;
 use crate::config_handler::prompt::{read_prompt_statement_from_rsh};
-use crate::built_ins::variable_handler::{get_vars, set_vars};
+use crate::built_ins::variable_handler::{get_vars};
 
 mod built_ins;
 mod config_handler;
@@ -89,7 +88,7 @@ fn main() -> Result<(), Error> {
 
     let running_clone = Arc::clone(&running);
 
-    let mut env_vars = set_vars("Shell".parse().unwrap(), current_exe().unwrap().to_string_lossy().parse().unwrap(), get_vars().clone());
+    let mut env_vars = get_vars().clone();
 
     ctrlc::set_handler(move || {
         running_clone.store(false, Ordering::SeqCst);
