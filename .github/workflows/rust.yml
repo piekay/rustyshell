@@ -6,6 +6,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RUSTUP_TOOLCHAIN: 1.75.0
 
 jobs:
   build:
