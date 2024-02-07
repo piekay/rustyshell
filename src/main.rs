@@ -14,7 +14,8 @@ use rustyline::hint::HistoryHinter;
 use rustyline::validate::MatchingBracketValidator;
 use crate::built_ins::autocomplete::{autocomplete_apps, autocomplete_files};
 use crate::built_ins::command_handler::command_handler;
-use crate::config_handler::prompt::{read_prompt_statement_from_rsh, replace_placeholders};
+use crate::built_ins::filename_expansion::expand;
+use crate::config_handler::prompt::{read_prompt_statement_from_rsh};
 use crate::built_ins::variable_handler::{get_vars};
 
 mod built_ins;
@@ -117,7 +118,7 @@ fn main() -> Result<(), Error> {
 
     loop {
         if let Ok(print_statement) = read_prompt_statement_from_rsh() {
-            let p = format!("{}", replace_placeholders(print_statement.as_str()));
+            let p = format!("{}", print_statement.as_str());
             rl.helper_mut().expect("No helper").colored_prompt = format!("\x1b[1;32m{p}\x1b[0m");
             let readline = rl.readline(&p);
 
@@ -128,7 +129,7 @@ fn main() -> Result<(), Error> {
                     }
                     rl.add_history_entry(line.as_str()).expect("Error: Couldn't add to history");
                     while running.load(Ordering::SeqCst) {
-                        env_vars = command_handler(line.replace("~", &*home_dir().unwrap().to_string_lossy()), env_vars);
+                        env_vars = command_handler(expand(line), env_vars);
                         break;
                     }
                 },

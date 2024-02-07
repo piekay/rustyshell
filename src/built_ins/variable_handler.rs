@@ -11,6 +11,9 @@ pub(crate) fn get_value(var: String, map: HashMap<String, String>) -> String {
 }
 
 pub(crate) fn set_vars(key: String, value: String, mut map: HashMap<String, String>) -> HashMap<String, String>{
+    if map.contains_key(&key) {
+        map.remove(&key);
+    }
     map.insert(key, value);
     map
 }

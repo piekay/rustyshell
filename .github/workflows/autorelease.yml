@@ -1,14 +1,13 @@
 name: Rust
-
-on:
-  push:
-    branches: [ "master" ]
-
 env:
   CARGO_TERM_COLOR: always
-
-jobs: 
-  release:    
+on:
+  pull_request:
+    types:
+      - closed
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

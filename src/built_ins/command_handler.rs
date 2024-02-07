@@ -44,11 +44,6 @@ pub(crate) fn command_handler(mut input:String, mut env_vars: HashMap<String, St
             break
         }
 
-        for arg in &args {
-            let mut arg = arg;
-            arg = &&*arg.replace(&("$".to_string() + arg), &*get_value(arg.to_string(), env_vars.clone()));
-        }
-
         match command {
             "cd" => execute_cd(args.iter().peekable()),
             command => {
