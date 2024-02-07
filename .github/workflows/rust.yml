@@ -11,12 +11,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --verbose
+    - name: Run Tests
+      run: cargo test --verbose     
+
+
+
+
+
+    
+    
       
