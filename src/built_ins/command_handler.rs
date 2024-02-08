@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::process::{Child, Command, Stdio};
+use shellwords::{split};
 use crate::built_ins::cd::execute_cd;
 use crate::built_ins::variable_handler::{get_value, set_vars};
 
@@ -16,10 +17,12 @@ pub(crate) fn command_handler(mut input:String, mut env_vars: HashMap<String, St
             .filter(|&word| word.contains('='))
             .collect();
 
-        let mut parts: Vec<&str> = command
-            .split_whitespace()
-            .filter(|&word| !word.contains('='))
+        //Maybe needs to get changed in the future
+        let parts: Vec<String> = split(command).unwrap().into_iter()
+            .filter(|word| !word.contains('='))
             .collect();
+
+        let  mut parts: Vec<&str> = parts.iter().map(|s| s.as_str()).collect();
 
         for env_var in environment_vars.iter() {
             let parts: Vec<&str> = env_var.split('=').collect();
@@ -28,7 +31,7 @@ pub(crate) fn command_handler(mut input:String, mut env_vars: HashMap<String, St
                     let key = parts[0];
                     let value = parts[1];
                     env_vars = set_vars(key.parse().unwrap(), value.parse().unwrap(), env_vars);
-                } else { println!("{}", "Command not found: ".to_owned() + command) }
+                } else { println!("{}", "Command not found: ".to_owned() + &command) }
             }
         }
 
@@ -38,6 +41,8 @@ pub(crate) fn command_handler(mut input:String, mut env_vars: HashMap<String, St
 
         let command = parts.remove(0);
         let args = parts.clone();
+
+        println!("{:?}", args);
 
         if command.starts_with("$") {
             println!("{}", "Command not found: ".to_owned() + command);
