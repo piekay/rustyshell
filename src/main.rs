@@ -38,7 +38,9 @@ impl Completer for MyHelper {
     type Candidate = String;
 
     fn complete(&self, line: &str, pos: usize, _ctx: &rustyline::Context<'_>) -> Result<(usize, Vec<String>), ReadlineError> {
-        let prefix = &line[..pos];
+        let mut prefix = &line[..pos];
+        let expanded_prefix = expand(prefix.to_string());
+        prefix = &expanded_prefix;
         let mut app_completions = autocomplete_apps(prefix);
         let file_completions = autocomplete_files(prefix);
 
@@ -50,10 +52,12 @@ impl Completer for MyHelper {
 
         let mut completions = app_completions;
         completions.extend(file_completions);
-        if prefix.split(" ").last().unwrap().starts_with("/") {
-            return Ok((pos, completions))
+        let mut last_arg = prefix.split(" ").last().expect("Fatal error while handling input autocompletion!");
+        if let Some(index_of_last_slash) = last_arg.rfind("/") {
+            last_arg = &last_arg[index_of_last_slash + 1..];
         }
-        Ok((pos - prefix.split(" ").last().unwrap().len(), completions))
+        let index = last_arg.len();
+        Ok((pos - index, completions))
     }
 }
 
