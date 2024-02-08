@@ -35,33 +35,34 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
 
     if let Some(last_arg) = last_arg {
         if let Some(index_of_last_slash) = last_arg.rfind('/') {
-            if let Some(index_of_first_slash) = last_arg.find('/') {
-                if index_of_last_slash == index_of_first_slash {
-                    if let Ok(path) = fs::read_dir("/") {
-                        for entries in path {
-                            if let Ok(entries) = entries {
-                                if let Some(file_name) = entries.file_name().to_str() {
-                                    if !file_name.starts_with(".") || last_arg[index_of_last_slash + 1..].starts_with(".") {
-                                        if file_name.starts_with(&last_arg[index_of_last_slash + 1..]) {
-                                            let mut new_file_name: String = Default::default();
-                                            if file_name.contains(" ") {
-                                                for c in file_name.chars() {
-                                                    if c == ' ' {
-                                                        new_file_name.push('\\');
-                                                    }
-                                                    new_file_name.push(c);
+            if index_of_last_slash == 0 {
+                if let Ok(path) = fs::read_dir("/") {
+                    for entries in path {
+                        if let Ok(entries) = entries {
+                            if let Some(file_name) = entries.file_name().to_str() {
+                                if !file_name.starts_with(".") || last_arg[index_of_last_slash + 1..].starts_with(".") {
+                                    if file_name.starts_with(&last_arg[index_of_last_slash + 1..]) {
+                                        let mut new_file_name: String = Default::default();
+                                        if file_name.contains(" ") {
+                                            for c in file_name.chars() {
+                                                if c == ' ' {
+                                                    new_file_name.push('\\');
                                                 }
-                                            }else {
-                                                new_file_name = file_name.parse().unwrap();
+                                                new_file_name.push(c);
                                             }
-                                            suggestions.push(new_file_name + "/");
+                                        }else {
+                                            new_file_name = file_name.parse().unwrap();
                                         }
+                                        if entries.file_type().unwrap().is_dir() {
+                                           new_file_name = new_file_name + "/";
+                                        }
+                                        suggestions.push(new_file_name);
                                     }
                                 }
                             }
                         }
                     }
-                    return suggestions;
+                return suggestions;
                 }
             }
             let user_specified_path = &last_arg[0..index_of_last_slash];
@@ -82,7 +83,10 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
                                     }else {
                                         new_file_name = file_name.parse().unwrap();
                                     }
-                                    suggestions.push(new_file_name + "/");
+                                    if entries.file_type().unwrap().is_dir() {
+                                        new_file_name = new_file_name + "/";
+                                    }
+                                    suggestions.push(new_file_name);
                                 }
                             }
                         }
@@ -108,7 +112,10 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
                                 }else {
                                     new_file_name = file_name.parse().unwrap();
                                 }
-                                suggestions.push(new_file_name + "/");
+                                if entries.file_type().unwrap().is_dir() {
+                                    new_file_name = new_file_name + "/";
+                                }
+                                suggestions.push(new_file_name);
                             }
                         }
                     }
