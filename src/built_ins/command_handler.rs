@@ -42,8 +42,6 @@ pub(crate) fn command_handler(mut input:String, mut env_vars: HashMap<String, St
         let command = parts.remove(0);
         let args = parts.clone();
 
-        println!("{:?}", args);
-
         if command.starts_with("$") {
             println!("{}", "Command not found: ".to_owned() + command);
             break
