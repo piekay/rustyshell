@@ -1,5 +1,6 @@
 use std::{env, fs, io};
 use dirs::home_dir;
+use whoami::fallible;
 
 pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
     if let Some(home_path) = home_dir() {
@@ -20,7 +21,7 @@ pub(crate) fn read_prompt_statement_from_rsh() -> Result<String, io::Error> {
 }
 fn replace_placeholders(prompt: String) -> String  {
     let username = whoami::username();
-    let hostname = whoami::hostname();
+    let hostname = fallible::hostname().expect("Couldn't get hostname.");
     let current_directory = env::current_dir().unwrap().display().to_string();
 
     let replaced_prompt = prompt

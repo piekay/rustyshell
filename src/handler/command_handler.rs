@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::process::{Child, Command, Stdio};
 use shellwords::{split};
 use crate::built_ins::cd::execute_cd;
-use crate::built_ins::variable_handler::{get_value, set_vars};
+use crate::handler::variable_handler::{get_value, set_vars};
 
 pub(crate) fn command_handler(mut input:String, mut env_vars: HashMap<String, String>) -> HashMap<String, String> {
     for vars in env_vars.keys() {
