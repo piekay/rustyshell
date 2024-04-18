@@ -1,5 +1,4 @@
 use std::{env, fs};
-use std::fs::DirEntry;
 
 pub(crate) fn autocomplete_apps(input: &str) -> Vec<String> {
     let mut suggestions = Vec::new();
@@ -51,7 +50,18 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
                     if let Some(file_name) = entries.file_name().to_str() {
                         if !file_name.starts_with(".") || last_arg[index_of_last_slash..].starts_with(".") {
                             if file_name.starts_with(&last_arg[index_of_last_slash..]) {
-                                suggestions = push_to_suggestions(suggestions, entries, file_name);
+                                let mut new_file_name: String = Default::default();
+                                for c in file_name.chars() {
+                                    if c == ' ' {
+                                        new_file_name.push('\\');
+                                    }
+                                    new_file_name.push(c);
+                                }
+
+                                if entries.file_type().unwrap().is_dir() {
+                                    new_file_name = new_file_name + "/";
+                                }
+                                suggestions.push(new_file_name);
                             }
                         }
                     }
@@ -59,22 +69,5 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
             }
         }
     }
-    return suggestions;
-}
-
-fn push_to_suggestions(mut suggestions: Vec<String>, entries: DirEntry, file_name: &str) -> Vec<String> {
-    let mut new_file_name: String = Default::default();
-    for c in file_name.chars() {
-        if c == ' ' {
-            new_file_name.push('\\');
-        }
-        new_file_name.push(c);
-    }
-
-    if entries.file_type().unwrap().is_dir() {
-        new_file_name = new_file_name + "/";
-    }
-    suggestions.push(new_file_name);
-
     return suggestions;
 }
