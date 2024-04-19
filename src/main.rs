@@ -13,13 +13,14 @@ use rustyline::highlight::{Highlighter, MatchingBracketHighlighter};
 use rustyline::hint::HistoryHinter;
 use rustyline::validate::MatchingBracketValidator;
 use crate::built_ins::autocomplete::{autocomplete_apps, autocomplete_files};
-use crate::built_ins::command_handler::command_handler;
-use crate::built_ins::filename_expansion::expand;
+use crate::handler::command_handler::command_handler;
+use crate::handler::filename_expansion::expand;
 use crate::config_handler::prompt::{read_prompt_statement_from_rsh};
-use crate::built_ins::variable_handler::{get_vars};
+use crate::handler::variable_handler::{get_vars};
 
 mod built_ins;
 mod config_handler;
+mod handler;
 
 #[derive(Helper, Hinter, Validator)]
 struct MyHelper {
