@@ -33,17 +33,16 @@ pub(crate) fn autocomplete_files(input: &str) -> Vec<String> {
     let current_path = env::current_dir().unwrap().display().to_string();
 
     if let Some(last_arg) = last_arg {
-        let user_specified_path = if let Some(index_of_last_slash) = last_arg.rfind('/') {
-            if index_of_last_slash == 0 {
-                "/"
-            }else {
-                &last_arg[0..index_of_last_slash]
-            }
-        } else {
-            &*current_path
-        };
-
         let index_of_last_slash = if let Some(index_of_last_slash) = last_arg.rfind('/') { index_of_last_slash + 1 } else { 0 };
+        let user_specified_path =
+            if index_of_last_slash == 1 {
+                "/"
+            }else if index_of_last_slash != 0 {
+                &last_arg[0..index_of_last_slash]
+            } else {
+                &*current_path
+            };
+
         if let Ok(path) = fs::read_dir(user_specified_path) {
             for entries in path {
                 if let Ok(entries) = entries {
