@@ -15,6 +15,6 @@ strip = true
 [dependencies]
 dirs = "5.0.1"
 whoami = "1.5.1"
-rustyline = { version = "14.0.0", features = ["with-file-history", "rustyline-derive", "derive"] }
+rustyline = { version = "18.0.0", features = ["with-file-history", "rustyline-derive", "derive"] }
 ctrlc = "3.4.4"
 shellwords = "1.1.0"
